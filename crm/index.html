@@ -1,0 +1,811 @@
+<title>Masjid Al Momineen CRM</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Inter:wght@400;500;600;700&family=Marcellus&display=swap">
+<style>
+/* Layout: fixed left rail of sections (top tab strip on phones) beside one working pane; records open in a side sheet. */
+:root{
+  --bg:#f4f5f1; --surface:#ffffff; --sunk:#eceee8; --ink:#17231f; --muted:#5b6964; --line:#dce1db;
+  --accent:#0f5c4f; --accent-ink:#ffffff; --accent-soft:#e2ede9; --brass:#94702b; --brass-soft:#f4ecdb;
+  --good:#2b7a4b; --warn:#9a5f0c; --crit:#ad3529; --crit-soft:#f8e6e3; --warn-soft:#f7ecd9;
+  --shadow:0 1px 2px rgba(20,40,35,.06),0 8px 24px rgba(20,40,35,.08);
+  --f-display:"Marcellus","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-arabic:"Amiri","Geeza Pro","Traditional Arabic",serif;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1614; --surface:#15201d; --sunk:#1b2825; --ink:#e4ebe8; --muted:#94a49e; --line:#273531;
+  --accent:#55b9a2; --accent-ink:#04201a; --accent-soft:#18332d; --brass:#d4ad60; --brass-soft:#2d2717;
+  --good:#62c38a; --warn:#e3ad52; --crit:#f17f71; --crit-soft:#3a1f1c; --warn-soft:#352914;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1614; --surface:#15201d; --sunk:#1b2825; --ink:#e4ebe8; --muted:#94a49e; --line:#273531;
+  --accent:#55b9a2; --accent-ink:#04201a; --accent-soft:#18332d; --brass:#d4ad60; --brass-soft:#2d2717;
+  --good:#62c38a; --warn:#e3ad52; --crit:#f17f71; --crit-soft:#3a1f1c; --warn-soft:#352914;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;text-wrap:balance;letter-spacing:.01em}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100%}
+/* rail */
+.rail{background:var(--surface);border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh;padding-left:max(14px,env(safe-area-inset-left,0px))}
+.brand{display:flex;flex-direction:column;gap:2px;padding:0 8px}
+.brand .ar{font-family:var(--f-arabic);font-size:22px;color:var(--brass);line-height:1.2;direction:rtl;text-align:left}
+.brand .en{font-family:var(--f-display);font-size:19px;line-height:1.2}
+.brand .sub{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+nav.tabs{display:flex;flex-direction:column;gap:2px}
+nav.tabs a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:500}
+nav.tabs a:hover{background:var(--sunk);color:var(--ink)}
+nav.tabs a[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
+nav.tabs .n{font-size:12px;color:var(--muted);font-weight:500}
+.rail-foot{margin-top:auto;padding:0 8px;font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:1px}
+.dot.live{background:var(--good)} .dot.warn{background:var(--warn)} .dot.crit{background:var(--crit)}
+/* main */
+main{min-width:0;padding-block:26px 60px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px))}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px;margin-bottom:20px}
+.head h1{font-size:30px;line-height:1.1}
+.head .date{color:var(--muted);font-size:13px;margin-top:4px}
+.head .date .hj{color:var(--brass)}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 13px;border-radius:8px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--crit);border-color:transparent;background:transparent}
+.btn.danger.armed{background:var(--crit);color:#fff}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:var(--r);background:var(--brass-soft);color:var(--ink);margin-bottom:18px;font-size:13px}
+.banner.crit{background:var(--crit-soft)}
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.kpi .l{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.kpi .v{font-family:var(--f-display);font-size:28px;line-height:1.15}
+.kpi .s{font-size:12px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;min-width:0}
+.panel h2{font-size:18px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.panel h2 a,.panel h2 .aside{font-family:var(--f-body);font-size:12px;color:var(--accent);text-decoration:none;font-weight:500}
+.panel h2 .aside{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:16px}
+/* chart */
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .bar{fill:var(--accent)}
+.chart .bar.cur{fill:var(--brass)}
+.chart .hit{fill:transparent;cursor:default}
+.chart .hit:hover+.bar,.chart g:hover .bar{opacity:.8}
+.chart text{fill:var(--muted);font-size:11px;font-family:var(--f-body)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);padding:6px 9px;border-radius:6px;font-size:12px;white-space:nowrap;transform:translate(-50%,-110%);box-shadow:var(--shadow)}
+.funds{display:flex;flex-direction:column;gap:9px}
+.fund{display:grid;grid-template-columns:minmax(0,120px) minmax(0,1fr) auto;align-items:center;gap:10px;font-size:13px}
+.fund .track{height:10px;background:var(--sunk);border-radius:5px;overflow:hidden}
+.fund .fill{height:100%;background:var(--accent);border-radius:0 4px 4px 0}
+.fund .amt{font-weight:600;min-width:64px;text-align:right}
+/* lists */
+.rows{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--line);min-width:0}
+.row:first-child{border-top:0}
+.row .main{flex:1;min-width:0}
+.row .t{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .m{font-size:12px;color:var(--muted)}
+.row .r{text-align:right;font-weight:600;white-space:nowrap}
+.cal{width:44px;flex:none;text-align:center;border:1px solid var(--line);border-radius:8px;overflow:hidden;line-height:1.1}
+.cal .mo{background:var(--accent);color:var(--accent-ink);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 0;font-weight:600}
+.cal .d{font-family:var(--f-display);font-size:18px;padding:3px 0}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.chip.ok{background:var(--accent-soft);color:var(--accent)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.crit{background:var(--crit-soft);color:var(--crit)}
+.chip.brass{background:var(--brass-soft);color:var(--brass)}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.empty{color:var(--muted);font-size:13px;padding:10px 0}
+/* toolbar + table */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.toolbar input[type=search]{flex:1 1 220px;min-width:0}
+.field,.toolbar input,.toolbar select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px;min-width:0}
+.sum{margin-left:auto;color:var(--muted);font-size:13px}
+.sum b{color:var(--ink)}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--sunk);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover td{background:var(--sunk)}
+td.num,th.num{text-align:right;white-space:nowrap}
+td .sub{display:block;font-size:12px;color:var(--muted)}
+tfoot td{font-weight:600;background:var(--sunk);border-top:1px solid var(--line)}
+.prog{height:8px;background:var(--sunk);border-radius:4px;overflow:hidden;min-width:90px}
+.prog i{display:block;height:100%;background:var(--accent);border-radius:0 4px 4px 0}
+.prog.done i{background:var(--good)}
+.check{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--muted);background:transparent;cursor:pointer;flex:none;display:grid;place-items:center;padding:0}
+.check.on{background:var(--good);border-color:var(--good);color:#fff}
+.done-t{text-decoration:line-through;color:var(--muted)}
+/* empty hero */
+.welcome{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:28px;display:grid;gap:14px;max-width:720px}
+.welcome h2{font-size:24px}
+.welcome p{margin:0;color:var(--muted);max-width:62ch}
+.welcome ol{margin:0;padding-left:20px;color:var(--muted);display:grid;gap:4px}
+/* dialogs */
+dialog{border:0;padding:0;background:var(--surface);color:var(--ink);border-radius:14px;box-shadow:var(--shadow);width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 24px)}
+dialog::backdrop{background:rgba(8,20,17,.45)}
+dialog.sheet{margin:0 0 0 auto;height:100dvh;max-height:100dvh;width:min(520px,100vw);border-radius:14px 0 0 14px}
+.dlg{display:flex;flex-direction:column;max-height:inherit;height:100%}
+.dlg header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px 12px;border-bottom:1px solid var(--line);padding-top:max(18px,env(safe-area-inset-top,0px))}
+.dlg header h2{font-size:22px}
+.dlg .body{padding:16px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;flex:1}
+.dlg footer{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;padding:12px 20px;border-top:1px solid var(--line);padding-bottom:max(12px,env(safe-area-inset-bottom,0px))}
+.dlg footer .left{margin-right:auto}
+.x{border:0;background:transparent;font-size:22px;line-height:1;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:6px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+.form .full{grid-column:1/-1}
+.form label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:var(--muted);min-width:0}
+.form label .hint{font-weight:400}
+.form .field{width:100%;color:var(--ink);font-weight:400;font-size:14px}
+.form textarea.field{min-height:72px;resize:vertical}
+.pickrow{display:flex;flex-wrap:wrap;gap:6px}
+.pick{border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;cursor:pointer;background:var(--surface);font-weight:500;color:var(--muted)}
+.pick[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.err{color:var(--crit);font-size:13px}
+.stats3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{background:var(--sunk);border-radius:8px;padding:10px 12px}
+.stat .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.stat .v{font-family:var(--f-display);font-size:20px}
+.kv{display:grid;grid-template-columns:90px minmax(0,1fr);gap:6px 10px;font-size:13px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;overflow-wrap:anywhere;user-select:text}
+.sec{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+pre.stmt{margin:0;padding:14px;background:var(--sunk);border-radius:8px;font-size:12px;white-space:pre-wrap;overflow-x:auto;user-select:all;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.toast{position:fixed;left:50%;bottom:max(20px,calc(env(safe-area-inset-bottom,0px) + 12px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:13px;box-shadow:var(--shadow);z-index:50}
+@media (max-width:1000px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;height:auto;flex-direction:column;gap:10px;padding:12px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));border-right:0;border-bottom:1px solid var(--line)}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+  .brand{flex-direction:row;align-items:baseline;gap:10px;padding:0}
+  .brand .sub,.rail-foot{display:none}
+  nav.tabs{flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:8px;scrollbar-width:none}
+  nav.tabs a{flex:none;padding:7px 11px}
+  nav.tabs .n{display:none}
+  main{padding-block:18px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .head h1{font-size:24px}
+  .form{grid-template-columns:minmax(0,1fr)}
+  .kpi .v{font-size:22px}
+  dialog.sheet{border-radius:0}
+}
+@media (prefers-reduced-motion:no-preference){.btn,nav.tabs a{transition:background .15s,border-color .15s,color .15s}}
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <span class="ar" lang="ar">مسجد المؤمنين</span>
+      <span class="en">Masjid Al Momineen</span>
+      <span class="sub">Community CRM</span>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+    <div class="rail-foot">
+      <div id="conn"><span class="dot"></span>Connecting…</div>
+      <div id="rolenote"></div>
+    </div>
+  </aside>
+  <main id="main"></main>
+</div>
+<dialog id="dlg"></dialog>
+<dialog id="sheet" class="sheet"></dialog>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+"use strict";
+/* ---------- constants ---------- */
+const MASJID = "Masjid Al Momineen";
+const CURRENCY = "USD";
+const COLS = ["members","donations","pledges","events","followups"];
+const FUNDS = ["General Fund","Zakat","Sadaqah","Zakat al-Fitr","Building Fund","Ramadan Iftar","Education","Janazah Fund"];
+const METHODS = ["Cash","Check","Card","Bank transfer","Online"];
+const ROLES = ["Volunteer","Board","Teacher","Staff","Youth","New Muslim"];
+const STATUSES = ["Active","Inactive","Visitor"];
+const EVENT_CATS = ["Jumu'ah","Halaqa","Qur'an class","Youth","Sisters","Eid","Iftar","Fundraiser","Janazah","Community"];
+const FU_TYPES = ["Phone call","Home visit","Hospital visit","Welcome","Condolence","Pledge reminder","Other"];
+const VIEWS = [
+  ["dashboard","Overview"],["members","Members"],["donations","Donations"],
+  ["pledges","Pledges"],["events","Events"],["followups","Follow-ups"]
+];
+const LS_KEY = "mam-crm-v1";
+
+/* ---------- state ---------- */
+const S = {members:[],donations:[],pledges:[],events:[],followups:[]};
+let store = null;           // adapter
+let conn = "connecting";    // connecting | loading | live | slow | local | error
+let readOnly = false;
+let downloads = null;
+let view = "dashboard";
+let builtView = null;
+const ui = {mq:"", mstatus:"Active", mrole:"", dq:"", dfund:"", dyear:String(new Date().getFullYear()), fstatus:"Open", ewhen:"upcoming"};
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad = n => String(n).padStart(2,"0");
+const isoDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today = () => isoDate(new Date());
+const parseD = s => { if(!s) return null; const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d||1); };
+const money0 = new Intl.NumberFormat("en-US",{style:"currency",currency:CURRENCY,maximumFractionDigits:0});
+const money2 = new Intl.NumberFormat("en-US",{style:"currency",currency:CURRENCY,minimumFractionDigits:2,maximumFractionDigits:2});
+const m0 = n => money0.format(n||0), m2 = n => money2.format(n||0);
+const fmtDate = s => { const d = parseD(s); return d ? d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "—"; };
+let hijriFmt = null;
+try { hijriFmt = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura",{day:"numeric",month:"long",year:"numeric"}); } catch(e) {}
+const hijri = d => { try { return hijriFmt ? hijriFmt.format(d).replace(/ AH$/,"") + " AH" : ""; } catch(e){ return ""; } };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const byId = (col,id) => S[col].find(r => r.id === id);
+const memberName = id => { const m = id && byId("members",id); return m ? m.name : ""; };
+const donorLabel = d => memberName(d.memberId) || d.donorName || "Anonymous";
+const sumAmt = arr => arr.reduce((a,r) => a + (Number(r.amount)||0), 0);
+const year = () => new Date().getFullYear();
+const sampleChip = r => r.sample ? ' <span class="chip brass">Sample</span>' : "";
+
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2600); }
+function errMsg(e){
+  const c = e && e.code;
+  if (c === "invalid_argument") return "You don't have permission to change records here. Ask the owner for Contributor access.";
+  if (c === "quota_exceeded") return "The database is full. Delete old records to make room.";
+  if (c === "resource_exhausted") return "Too many changes at once. Wait a moment and try again.";
+  return "Couldn't save. Check your connection and try again.";
+}
+
+/* ---------- storage adapters ---------- */
+function localAdapter(){
+  try { const d = JSON.parse(localStorage.getItem(LS_KEY) || "{}"); COLS.forEach(c => S[c] = Array.isArray(d[c]) ? d[c] : []); } catch(e) {}
+  const persist = () => { try { const o = {}; COLS.forEach(c => o[c] = S[c]); localStorage.setItem(LS_KEY, JSON.stringify(o)); } catch(e) {} };
+  return {
+    async add(c,d){ S[c] = [...S[c], {...d, id: uid()}]; persist(); render(); },
+    async set(c,id,d){ S[c] = S[c].map(r => r.id === id ? {...d, id} : r); persist(); render(); },
+    async remove(c,id){ S[c] = S[c].filter(r => r.id !== id); persist(); render(); }
+  };
+}
+function dbAdapter(db){
+  return {
+    add: (c,d) => db.collection(c).add(d),
+    set: (c,id,d) => db.collection(c).doc(id).set(d),
+    remove: (c,id) => db.collection(c).doc(id).delete()
+  };
+}
+const strip = r => { const o = {...r}; delete o.id; return o; };
+
+async function boot(){
+  render();
+  let db = null;
+  if (window.claude && typeof window.claude.use === "function") {
+    try { db = await window.claude.use("db"); } catch(e) { db = null; }
+  }
+  if (!db) { store = localAdapter(); conn = "local"; render(); return; }
+  store = dbAdapter(db);
+  conn = "loading"; render();
+  const pending = new Set(COLS);
+  const timer = setTimeout(() => { if (conn === "loading") { conn = "slow"; render(); } }, 10000);
+  COLS.forEach(c => db.collection(c).onSnapshot(snap => {
+    S[c] = snap.docs.map(d => ({...d.data(), id: d.id}));
+    if (!snap.metadata.fromCache) { pending.delete(c); if (!pending.size) { conn = "live"; clearTimeout(timer); } }
+    queueRender();
+  }, () => { conn = "error"; clearTimeout(timer); render(); }));
+  try {
+    const user = await window.claude.use("user");
+    if (user) { const can = await user.can("data.write"); if (can === false) { readOnly = true; render(); } }
+  } catch(e) {}
+  try { downloads = await window.claude.use("downloads"); } catch(e) {}
+}
+
+let rq = 0;
+function queueRender(){ if (!rq) rq = requestAnimationFrame(() => { rq = 0; render(); }); }
+
+async function write(fn){
+  if (readOnly) { toast("You have view-only access."); return false; }
+  if (!store) { toast("Still connecting. Try again in a moment."); return false; }
+  try { await fn(); return true; }
+  catch(e){ if (e && e.code === "invalid_argument") { readOnly = true; render(); } toast(errMsg(e)); return false; }
+}
+
+/* ---------- derived data ---------- */
+function memberStats(id){
+  const ds = S.donations.filter(d => d.memberId === id);
+  const y = String(year());
+  const ytd = sumAmt(ds.filter(d => (d.date||"").startsWith(y)));
+  const last = ds.slice().sort((a,b) => (b.date||"").localeCompare(a.date||""))[0];
+  return {ds, ytd, all: sumAmt(ds), last};
+}
+function pledgePaid(p){
+  return sumAmt(S.donations.filter(d => d.memberId === p.memberId && d.fund === p.campaign &&
+    (!p.startDate || (d.date||"") >= p.startDate) && (!p.endDate || (d.date||"") <= p.endDate)));
+}
+function monthly12(){
+  const now = new Date(), out = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const key = `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+    out.push({key, label: d.toLocaleDateString("en-US",{month:"short"}), full: d.toLocaleDateString("en-US",{month:"long",year:"numeric"}),
+      v: sumAmt(S.donations.filter(x => (x.date||"").startsWith(key))), cur: i === 0});
+  }
+  return out;
+}
+
+/* ---------- chrome ---------- */
+function renderChrome(){
+  const counts = {members: S.members.filter(m => m.status !== "Inactive").length, donations: S.donations.length,
+    pledges: S.pledges.length, events: S.events.filter(e => (e.date||"") >= today()).length,
+    followups: S.followups.filter(f => f.status !== "Done").length};
+  $("#tabs").innerHTML = VIEWS.map(([k,l]) =>
+    `<a href="#${k}" ${k === view ? 'aria-current="page"' : ""}><span>${l}</span>${counts[k] != null ? `<span class="n">${counts[k]}</span>` : ""}</a>`).join("");
+  const c = {connecting:["","Connecting…"], loading:["","Loading records…"], live:["live","Shared · live"],
+    slow:["warn","Can't reach the database yet"], local:["warn","Saved in this browser only"], error:["crit","Connection lost — reload"]}[conn];
+  $("#conn").innerHTML = `<span class="dot ${c[0]}"></span>${c[1]}`;
+  $("#rolenote").textContent = readOnly ? "View-only access" : "";
+}
+
+function header(title, actions){
+  const d = new Date();
+  return `<div class="head"><div><h1>${title}</h1><div class="date">${d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}${hijri(d) ? ` · <span class="hj">${esc(hijri(d))}</span>` : ""}</div></div><div class="actions">${actions||""}</div></div>`;
+}
+function banners(){
+  let h = "";
+  if (conn === "local") h += `<div class="banner"><span>This copy is running outside Claude, so records are saved only in this browser. Open the published version to share records with your team.</span></div>`;
+  if (conn === "slow") h += `<div class="banner"><span>Can't reach the shared database yet. Records may be missing or out of date.</span></div>`;
+  if (conn === "error") h += `<div class="banner crit"><span>Lost the connection to the shared database. Reload the page to reconnect.</span></div>`;
+  const hasSample = COLS.some(c => S[c].some(r => r.sample));
+  if (hasSample) h += `<div class="banner"><span>Sample records are loaded so you can try things out. They're marked <span class="chip brass">Sample</span>.</span><button class="btn sm" data-act="clear-sample" ${readOnly?"disabled":""}>Remove sample data</button></div>`;
+  return h;
+}
+
+/* ---------- views ---------- */
+function render(){
+  const h = (location.hash || "").slice(1);
+  view = VIEWS.some(v => v[0] === h) ? h : "dashboard";
+  renderChrome();
+  const main = $("#main");
+  const keepToolbar = builtView === view && ["members","donations","followups","events"].includes(view);
+  if (!keepToolbar) { main.innerHTML = VIEW_FN[view].shell(); builtView = view; }
+  VIEW_FN[view].fill();
+  if (openSheetId) renderSheet();
+}
+
+const addBtn = (col,label) => `<button class="btn primary" data-act="new" data-col="${col}" ${readOnly?"disabled":""}>+ ${label}</button>`;
+
+const VIEW_FN = {
+  dashboard: {
+    shell: () => `<div id="top"></div><div id="dash"></div>`,
+    fill(){
+      $("#top").innerHTML = header("Assalamu alaikum", addBtn("donations","Record donation") + addBtn("members","Add member")) + banners();
+      const empty = COLS.every(c => !S[c].length);
+      if (empty) {
+        $("#dash").innerHTML = (conn === "loading" || conn === "connecting") ? `<p class="empty">Loading the masjid's records…</p>` :
+        `<div class="welcome"><h2>Start the masjid's records</h2>
+          <p>Keep track of the jama'ah, every donation by fund, building-fund pledges, programs and the people who need a call or a visit. Everyone you share this page with as a Contributor sees the same records.</p>
+          <ol><li>Add members and households.</li><li>Record donations against a fund such as Zakat, Sadaqah or the Building Fund.</li><li>Add pledges, events and follow-ups as they come up.</li></ol>
+          <div class="actions">${addBtn("members","Add the first member")}<button class="btn" data-act="sample" ${readOnly?"disabled":""}>Try it with sample data</button></div></div>`;
+        return;
+      }
+      const y = String(year()), mkey = today().slice(0,7);
+      const active = S.members.filter(m => m.status === "Active");
+      const households = new Set(active.map(m => (m.household || m.name || "").trim().toLowerCase())).size;
+      const ytdArr = S.donations.filter(d => (d.date||"").startsWith(y));
+      const monthArr = S.donations.filter(d => (d.date||"").startsWith(mkey));
+      const donors = new Set(ytdArr.map(d => d.memberId || d.donorName || "anon")).size;
+      const kpis = `<div class="kpis">
+        <div class="kpi"><span class="l">Active members</span><span class="v">${active.length}</span><span class="s">${households} households · ${S.members.filter(m=>m.status==="Visitor").length} visitors</span></div>
+        <div class="kpi"><span class="l">Given this month</span><span class="v">${m0(sumAmt(monthArr))}</span><span class="s">${monthArr.length} gifts</span></div>
+        <div class="kpi"><span class="l">Given in ${y}</span><span class="v">${m0(sumAmt(ytdArr))}</span><span class="s">${donors} donors</span></div>
+        <div class="kpi"><span class="l">Open follow-ups</span><span class="v">${S.followups.filter(f=>f.status!=="Done").length}</span><span class="s">${S.followups.filter(f=>f.status!=="Done"&&f.due&&f.due<today()).length} overdue</span></div></div>`;
+      // fund breakdown
+      const ft = FUNDS.map(f => ({f, v: sumAmt(ytdArr.filter(d => d.fund === f))})).filter(x => x.v > 0).sort((a,b) => b.v - a.v);
+      const fmax = Math.max(1, ...ft.map(x => x.v));
+      const fundsHtml = ft.length ? `<div class="funds">${ft.map(x => `<div class="fund"><span>${esc(x.f)}</span><div class="track"><div class="fill" style="width:${(x.v/fmax*100).toFixed(1)}%"></div></div><span class="amt">${m0(x.v)}</span></div>`).join("")}</div>` : `<p class="empty">No donations recorded in ${y} yet.</p>`;
+      // upcoming events
+      const up = S.events.filter(e => (e.date||"") >= today()).sort((a,b) => (a.date+(a.time||"")).localeCompare(b.date+(b.time||""))).slice(0,5);
+      const evHtml = up.length ? `<div class="rows">${up.map(evRow).join("")}</div>` : `<p class="empty">No upcoming events. Add Jumu'ah, halaqas, classes or Eid programs.</p>`;
+      // follow-ups
+      const fu = S.followups.filter(f => f.status !== "Done").sort((a,b) => (a.due||"9999").localeCompare(b.due||"9999")).slice(0,6);
+      const fuHtml = fu.length ? `<div class="rows">${fu.map(fuRow).join("")}</div>` : `<p class="empty">Nothing waiting. Alhamdulillah.</p>`;
+      // recent
+      const rec = S.donations.slice().sort((a,b) => (b.date||"").localeCompare(a.date||"") || (b.createdAt||0)-(a.createdAt||0)).slice(0,6);
+      const recHtml = rec.length ? `<div class="rows">${rec.map(d => `<div class="row"><div class="main"><div class="t">${esc(donorLabel(d))}${sampleChip(d)}</div><div class="m">${esc(d.fund||"")} · ${fmtDate(d.date)}</div></div><div class="r">${m2(d.amount)}</div></div>`).join("")}</div>` : `<p class="empty">No donations yet.</p>`;
+      $("#dash").innerHTML = kpis + `<div class="grid2">
+        <div class="stack">
+          <section class="panel"><h2>Giving, last 12 months <span class="aside">all funds</span></h2>${chart()}</section>
+          <section class="panel"><h2>Giving by fund in ${y} <a href="#donations">All donations →</a></h2>${fundsHtml}</section>
+          <section class="panel"><h2>Recent donations</h2>${recHtml}</section>
+        </div>
+        <div class="stack">
+          <section class="panel"><h2>Upcoming <a href="#events">Events →</a></h2>${evHtml}</section>
+          <section class="panel"><h2>Follow-ups <a href="#followups">All →</a></h2>${fuHtml}</section>
+        </div></div>`;
+      wireChart();
+    }
+  },
+
+  members: {
+    shell: () => `<div id="top"></div>
+      <div class="toolbar">
+        <input type="search" id="mq" placeholder="Search name, phone, email, household" value="${esc(ui.mq)}" aria-label="Search members">
+        <select id="mstatus" aria-label="Status"><option value="">All statuses</option>${STATUSES.map(s => `<option ${ui.mstatus===s?"selected":""}>${s}</option>`).join("")}</select>
+        <select id="mrole" aria-label="Role"><option value="">All roles</option>${ROLES.map(s => `<option ${ui.mrole===s?"selected":""}>${s}</option>`).join("")}</select>
+        <button class="btn" data-act="csv-members">Export CSV</button>
+        <span class="sum" id="msum"></span>
+      </div><div id="list"></div>`,
+    fill(){
+      $("#top").innerHTML = header("Members", addBtn("members","Add member")) + banners();
+      const q = ui.mq.trim().toLowerCase();
+      const rows = S.members.filter(m => (!ui.mstatus || m.status === ui.mstatus) && (!ui.mrole || (m.roles||[]).includes(ui.mrole)) &&
+        (!q || [m.name,m.phone,m.email,m.household,m.address].some(v => (v||"").toLowerCase().includes(q))))
+        .sort((a,b) => (a.name||"").localeCompare(b.name||""));
+      $("#msum").innerHTML = `<b>${rows.length}</b> of ${S.members.length}`;
+      if (!S.members.length) { $("#list").innerHTML = `<div class="panel"><p class="empty">No members yet. Add the first family to start the directory.</p></div>`; return; }
+      $("#list").innerHTML = `<div class="tablewrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Status</th><th>Roles</th><th class="num">Given ${year()}</th></tr></thead><tbody>${
+        rows.map(m => { const st = memberStats(m.id); return `<tr class="click" data-open="${esc(m.id)}" tabindex="0">
+          <td><b>${esc(m.name)}</b>${sampleChip(m)}${m.household ? `<span class="sub">${esc(m.household)}</span>` : ""}</td>
+          <td>${esc(m.phone||"—")}</td><td>${esc(m.email||"—")}</td>
+          <td>${statusChip(m.status)}</td><td><div class="chips">${(m.roles||[]).map(r => `<span class="chip">${esc(r)}</span>`).join("")}</div></td>
+          <td class="num">${st.ytd ? m0(st.ytd) : "—"}</td></tr>`; }).join("") ||
+        `<tr><td colspan="6" class="empty">No members match these filters.</td></tr>`}</tbody></table></div>`;
+    }
+  },
+
+  donations: {
+    shell: () => `<div id="top"></div>
+      <div class="toolbar">
+        <input type="search" id="dq" placeholder="Search donor, receipt or note" value="${esc(ui.dq)}" aria-label="Search donations">
+        <select id="dfund" aria-label="Fund"><option value="">All funds</option>${FUNDS.map(f => `<option ${ui.dfund===f?"selected":""}>${esc(f)}</option>`).join("")}</select>
+        <select id="dyear" aria-label="Year"></select>
+        <button class="btn" data-act="csv-donations">Export CSV</button>
+        <span class="sum" id="dsum"></span>
+      </div><div id="list"></div>`,
+    fill(){
+      $("#top").innerHTML = header("Donations", addBtn("donations","Record donation")) + banners();
+      const years = [...new Set([String(year()), ...S.donations.map(d => (d.date||"").slice(0,4)).filter(Boolean)])].sort().reverse();
+      const ysel = $("#dyear"), yhtml = `<option value="">All years</option>` + years.map(y => `<option ${ui.dyear===y?"selected":""}>${y}</option>`).join("");
+      if (ysel.dataset.h !== yhtml) { ysel.innerHTML = yhtml; ysel.dataset.h = yhtml; }
+      const q = ui.dq.trim().toLowerCase();
+      const rows = S.donations.filter(d => (!ui.dfund || d.fund === ui.dfund) && (!ui.dyear || (d.date||"").startsWith(ui.dyear)) &&
+        (!q || [donorLabel(d), d.ref, d.notes, d.method].some(v => (v||"").toLowerCase().includes(q))))
+        .sort((a,b) => (b.date||"").localeCompare(a.date||"") || (b.createdAt||0)-(a.createdAt||0));
+      $("#dsum").innerHTML = `<b>${m2(sumAmt(rows))}</b> · ${rows.length} gifts`;
+      if (!S.donations.length) { $("#list").innerHTML = `<div class="panel"><p class="empty">No donations recorded yet. Record one against a fund to start.</p></div>`; return; }
+      $("#list").innerHTML = `<div class="tablewrap"><table><thead><tr><th>Date</th><th>Donor</th><th>Fund</th><th>Method</th><th>Receipt / ref</th><th class="num">Amount</th></tr></thead><tbody>${
+        rows.map(d => `<tr class="click" data-edit="donations" data-id="${esc(d.id)}" tabindex="0"><td>${fmtDate(d.date)}</td>
+          <td><b>${esc(donorLabel(d))}</b>${sampleChip(d)}${!d.memberId ? `<span class="sub">Not a member record</span>` : ""}</td>
+          <td><span class="chip ${["Zakat","Zakat al-Fitr"].includes(d.fund) ? "brass" : "ok"}">${esc(d.fund||"—")}</span></td>
+          <td>${esc(d.method||"—")}</td><td>${esc(d.ref||"—")}</td><td class="num">${m2(d.amount)}</td></tr>`).join("") ||
+        `<tr><td colspan="6" class="empty">No donations match these filters.</td></tr>`}</tbody>
+        ${rows.length ? `<tfoot><tr><td colspan="5">Total</td><td class="num">${m2(sumAmt(rows))}</td></tr></tfoot>` : ""}</table></div>`;
+    }
+  },
+
+  pledges: {
+    shell: () => `<div id="top"></div><div id="list"></div>`,
+    fill(){
+      $("#top").innerHTML = header("Pledges", addBtn("pledges","Add pledge")) + banners();
+      if (!S.pledges.length) { $("#list").innerHTML = `<div class="panel"><p class="empty">No pledges yet. When a family pledges to the Building Fund or another campaign, add it here. Donations they record to that fund count toward it automatically.</p></div>`; return; }
+      const rows = S.pledges.map(p => ({p, paid: pledgePaid(p)})).sort((a,b) => (a.p.campaign||"").localeCompare(b.p.campaign||"") || memberName(a.p.memberId).localeCompare(memberName(b.p.memberId)));
+      const tp = rows.reduce((a,r) => a + (Number(r.p.amount)||0), 0), tpaid = rows.reduce((a,r) => a + Math.min(r.paid, Number(r.p.amount)||0), 0);
+      $("#list").innerHTML = `<div class="kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+        <div class="kpi"><span class="l">Pledged</span><span class="v">${m0(tp)}</span></div>
+        <div class="kpi"><span class="l">Received</span><span class="v">${m0(tpaid)}</span></div>
+        <div class="kpi"><span class="l">Outstanding</span><span class="v">${m0(tp - tpaid)}</span></div></div>
+        <div class="tablewrap"><table><thead><tr><th>Member</th><th>Campaign</th><th>Period</th><th class="num">Pledged</th><th class="num">Received</th><th>Progress</th></tr></thead><tbody>${
+        rows.map(({p,paid}) => { const pct = p.amount ? Math.min(100, paid/p.amount*100) : 0; return `<tr class="click" data-edit="pledges" data-id="${esc(p.id)}" tabindex="0">
+          <td><b>${esc(memberName(p.memberId) || "Unknown member")}</b>${sampleChip(p)}</td><td>${esc(p.campaign)}</td>
+          <td>${p.startDate ? fmtDate(p.startDate) : "—"}${p.endDate ? ` – ${fmtDate(p.endDate)}` : ""}</td>
+          <td class="num">${m0(p.amount)}</td><td class="num">${m0(paid)}</td>
+          <td><div class="prog ${pct>=100?"done":""}" title="${pct.toFixed(0)}%"><i style="width:${pct.toFixed(1)}%"></i></div></td></tr>`; }).join("")}</tbody></table></div>`;
+    }
+  },
+
+  events: {
+    shell: () => `<div id="top"></div>
+      <div class="toolbar"><select id="ewhen" aria-label="Which events"><option value="upcoming" ${ui.ewhen==="upcoming"?"selected":""}>Upcoming</option><option value="past" ${ui.ewhen==="past"?"selected":""}>Past</option><option value="" ${!ui.ewhen?"selected":""}>All</option></select><span class="sum" id="esum"></span></div>
+      <div id="list"></div>`,
+    fill(){
+      $("#top").innerHTML = header("Events & programs", addBtn("events","Add event")) + banners();
+      const t = today();
+      let rows = S.events.filter(e => ui.ewhen === "upcoming" ? (e.date||"") >= t : ui.ewhen === "past" ? (e.date||"") < t : true);
+      rows.sort((a,b) => (a.date+(a.time||"")).localeCompare(b.date+(b.time||"")));
+      if (ui.ewhen === "past") rows.reverse();
+      $("#esum").innerHTML = `<b>${rows.length}</b> events`;
+      if (!S.events.length) { $("#list").innerHTML = `<div class="panel"><p class="empty">No events yet. Add Jumu'ah, weekly halaqas, Qur'an classes, iftars and Eid programs.</p></div>`; return; }
+      $("#list").innerHTML = `<div class="tablewrap"><table><thead><tr><th>Date</th><th>Event</th><th>Category</th><th>Time & place</th><th class="num">Expected</th><th class="num">Attended</th></tr></thead><tbody>${
+        rows.map(e => `<tr class="click" data-edit="events" data-id="${esc(e.id)}" tabindex="0"><td>${fmtDate(e.date)}<span class="sub">${esc(hijri(parseD(e.date)))}</span></td>
+          <td><b>${esc(e.title)}</b>${sampleChip(e)}</td><td><span class="chip ok">${esc(e.category||"—")}</span></td>
+          <td>${esc(e.time||"")}${e.time && e.location ? " · " : ""}${esc(e.location||"")}</td>
+          <td class="num">${e.expected ?? "—"}</td><td class="num">${e.attended ?? "—"}</td></tr>`).join("") ||
+        `<tr><td colspan="6" class="empty">No ${ui.ewhen || ""} events.</td></tr>`}</tbody></table></div>`;
+    }
+  },
+
+  followups: {
+    shell: () => `<div id="top"></div>
+      <div class="toolbar"><select id="fstatus" aria-label="Status"><option ${ui.fstatus==="Open"?"selected":""}>Open</option><option ${ui.fstatus==="Done"?"selected":""}>Done</option><option value="" ${!ui.fstatus?"selected":""}>All</option></select><span class="sum" id="fsum"></span></div>
+      <div id="list"></div>`,
+    fill(){
+      $("#top").innerHTML = header("Follow-ups", addBtn("followups","Add follow-up")) + banners();
+      const rows = S.followups.filter(f => !ui.fstatus || (f.status||"Open") === ui.fstatus).sort((a,b) => (a.due||"9999").localeCompare(b.due||"9999"));
+      $("#fsum").innerHTML = `<b>${rows.length}</b> shown`;
+      if (!S.followups.length) { $("#list").innerHTML = `<div class="panel"><p class="empty">No follow-ups yet. Use these for welcome calls to new families, hospital visits, condolences and pledge reminders.</p></div>`; return; }
+      $("#list").innerHTML = `<div class="panel"><div class="rows">${rows.map(fuRow).join("") || `<p class="empty">Nothing here.</p>`}</div></div>`;
+    }
+  }
+};
+
+function statusChip(s){ return `<span class="chip ${s==="Active"?"ok":s==="Visitor"?"brass":""}">${esc(s||"—")}</span>`; }
+function evRow(e){
+  const d = parseD(e.date);
+  return `<div class="row click" data-edit="events" data-id="${esc(e.id)}" style="cursor:pointer"><div class="cal"><div class="mo">${d ? d.toLocaleDateString("en-US",{month:"short"}) : ""}</div><div class="d">${d ? d.getDate() : ""}</div></div>
+    <div class="main"><div class="t">${esc(e.title)}${sampleChip(e)}</div><div class="m">${esc(e.category||"")}${e.time ? " · " + esc(e.time) : ""}${e.location ? " · " + esc(e.location) : ""}</div></div></div>`;
+}
+function fuRow(f){
+  const done = f.status === "Done", over = !done && f.due && f.due < today(), dueToday = !done && f.due === today();
+  const who = memberName(f.memberId);
+  return `<div class="row"><button class="check ${done?"on":""}" data-act="toggle-fu" data-id="${esc(f.id)}" aria-label="${done?"Reopen":"Mark done"}" ${readOnly?"disabled":""}>${done?"✓":""}</button>
+    <div class="main" data-edit="followups" data-id="${esc(f.id)}" style="cursor:pointer"><div class="t ${done?"done-t":""}">${esc(f.subject)}${sampleChip(f)}</div>
+    <div class="m">${esc(f.type||"")}${who ? " · " + esc(who) : ""}${f.assignee ? " · " + esc(f.assignee) : ""}</div></div>
+    ${f.due ? `<span class="chip ${over?"crit":dueToday?"warn":""}">${over?"Overdue · ":dueToday?"Today · ":""}${fmtDate(f.due)}</span>` : ""}</div>`;
+}
+
+/* ---------- chart ---------- */
+function chart(){
+  const data = monthly12(), W = 560, H = 190, L = 44, B = 22, T = 10;
+  const max = Math.max(...data.map(d => d.v));
+  const step = niceStep(max/3), top = Math.max(step*3, step*Math.ceil(max/step));
+  const y = v => T + (H-T-B) * (1 - v/top), bw = (W-L)/12;
+  let g = "";
+  for (let v = 0; v <= top + 0.001; v += step) g += `<line class="grid" x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">${short(v)}</text>`;
+  const bars = data.map((d,i) => { const x = L + i*bw + bw*0.2, w = bw*0.6, h = (H-T-B) - (y(d.v)-T), yy = y(d.v);
+    const path = h > 0 ? `M${x},${H-B} V${yy+Math.min(4,h)} Q${x},${yy} ${x+Math.min(4,h)},${yy} H${x+w-Math.min(4,h)} Q${x+w},${yy} ${x+w},${yy+Math.min(4,h)} V${H-B} Z` : "";
+    return `<g data-tip="${esc(d.full)}: ${esc(m0(d.v))}"><rect class="hit" x="${L+i*bw}" y="${T}" width="${bw}" height="${H-T}"/>${path ? `<path class="bar ${d.cur?"cur":""}" d="${path}"/>` : ""}<text x="${x+w/2}" y="${H-6}" text-anchor="middle">${d.label}</text></g>`; }).join("");
+  return `<div class="chart" id="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Monthly giving for the last 12 months">${g}${bars}</svg><div class="tip" id="tip" hidden></div></div>
+    <p class="empty" style="padding-bottom:0">Current month in gold. Hover a month for its total.</p>`;
+}
+function niceStep(v){ if (v <= 0) return 100; const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v/p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; }
+function short(v){ return v >= 1000 ? "$" + (v/1000).toFixed(v % 1000 ? 1 : 0) + "k" : "$" + v; }
+function wireChart(){
+  const c = $("#chart"); if (!c) return; const tip = $("#tip");
+  c.querySelectorAll("g[data-tip]").forEach(g => {
+    g.addEventListener("pointerenter", () => { const r = g.getBoundingClientRect(), cr = c.getBoundingClientRect(); tip.textContent = g.dataset.tip; tip.style.left = (r.left - cr.left + r.width/2) + "px"; tip.style.top = (r.top - cr.top + 30) + "px"; tip.hidden = false; });
+    g.addEventListener("pointerleave", () => tip.hidden = true);
+  });
+}
+
+/* ---------- forms ---------- */
+const memberOpts = (sel, allowNone) => (allowNone ? `<option value="">— Not a member / anonymous —</option>` : `<option value="">Choose a member…</option>`) +
+  S.members.slice().sort((a,b) => (a.name||"").localeCompare(b.name||"")).map(m => `<option value="${esc(m.id)}" ${sel===m.id?"selected":""}>${esc(m.name)}${m.household ? " — " + esc(m.household) : ""}</option>`).join("");
+
+const FORMS = {
+  members: {title:"member", fields:[
+    {k:"name",l:"Full name",req:1,full:1},{k:"household",l:"Household",hint:"e.g. Rahman family"},{k:"status",l:"Status",type:"select",opts:STATUSES,def:"Active"},
+    {k:"phone",l:"Phone",type:"tel"},{k:"email",l:"Email",type:"email"},{k:"address",l:"Address",full:1},
+    {k:"since",l:"Member since",type:"date",def:today},{k:"roles",l:"Roles",type:"picks",opts:ROLES,full:1},{k:"notes",l:"Notes",type:"textarea",full:1}]},
+  donations: {title:"donation", fields:[
+    {k:"memberId",l:"Donor",type:"member",none:1,full:1},{k:"donorName",l:"Donor name",hint:"if not a member"},{k:"amount",l:"Amount ($)",type:"number",req:1},
+    {k:"date",l:"Date",type:"date",req:1,def:today},{k:"fund",l:"Fund",type:"select",opts:FUNDS,def:"General Fund"},
+    {k:"method",l:"Method",type:"select",opts:METHODS,def:"Cash"},{k:"ref",l:"Receipt / check no."},{k:"notes",l:"Notes",type:"textarea",full:1}]},
+  pledges: {title:"pledge", fields:[
+    {k:"memberId",l:"Member",type:"member",req:1,full:1},{k:"campaign",l:"Fund / campaign",type:"select",opts:FUNDS,def:"Building Fund"},{k:"amount",l:"Pledged amount ($)",type:"number",req:1},
+    {k:"startDate",l:"Starts",type:"date",def:today},{k:"endDate",l:"Ends",type:"date"},{k:"notes",l:"Notes",type:"textarea",full:1}]},
+  events: {title:"event", fields:[
+    {k:"title",l:"Title",req:1,full:1},{k:"date",l:"Date",type:"date",req:1,def:today},{k:"time",l:"Time",hint:"e.g. after Maghrib"},
+    {k:"category",l:"Category",type:"select",opts:EVENT_CATS,def:"Halaqa"},{k:"location",l:"Location",hint:"e.g. Main prayer hall"},
+    {k:"expected",l:"Expected",type:"number"},{k:"attended",l:"Attended",type:"number"},{k:"notes",l:"Notes",type:"textarea",full:1}]},
+  followups: {title:"follow-up", fields:[
+    {k:"subject",l:"What needs doing",req:1,full:1},{k:"memberId",l:"Member",type:"member",none:1,full:1},{k:"type",l:"Type",type:"select",opts:FU_TYPES,def:"Phone call"},
+    {k:"due",l:"Due",type:"date"},{k:"assignee",l:"Assigned to"},{k:"status",l:"Status",type:"select",opts:["Open","Done"],def:"Open"},{k:"notes",l:"Notes",type:"textarea",full:1}]}
+};
+
+function openForm(col, id, preset){
+  const spec = FORMS[col], rec = id ? byId(col,id) : null;
+  const val = f => rec ? rec[f.k] : preset && preset[f.k] != null ? preset[f.k] : typeof f.def === "function" ? f.def() : f.def;
+  const fieldHtml = f => {
+    const v = val(f), fid = `f-${col}-${f.k}`, lab = `${esc(f.l)}${f.hint ? ` <span class="hint">· ${esc(f.hint)}</span>` : ""}`;
+    let input;
+    if (f.type === "select") input = `<select class="field" id="${fid}" name="${f.k}">${f.opts.map(o => `<option ${o===v?"selected":""}>${esc(o)}</option>`).join("")}</select>`;
+    else if (f.type === "member") input = `<select class="field" id="${fid}" name="${f.k}" ${f.req?"required":""}>${memberOpts(v, f.none)}</select>`;
+    else if (f.type === "textarea") input = `<textarea class="field" id="${fid}" name="${f.k}">${esc(v)}</textarea>`;
+    else if (f.type === "picks") return `<div class="full"><label style="margin-bottom:6px">${lab}</label><div class="pickrow" data-picks="${f.k}">${f.opts.map(o => `<button type="button" class="pick" aria-pressed="${(v||[]).includes(o)}" data-val="${esc(o)}">${esc(o)}</button>`).join("")}</div></div>`;
+    else input = `<input class="field" id="${fid}" name="${f.k}" type="${f.type||"text"}" ${f.type==="number"?'min="0" step="any" inputmode="decimal"':""} value="${esc(v)}" ${f.req?"required":""}>`;
+    return `<label class="${f.full?"full":""}" for="${fid}">${lab}${input}</label>`;
+  };
+  const d = $("#dlg");
+  d.innerHTML = `<form class="dlg" id="form" novalidate>
+    <header><h2>${rec ? "Edit" : "New"} ${spec.title}</h2><button type="button" class="x" data-act="close" aria-label="Close">×</button></header>
+    <div class="body"><div class="form">${spec.fields.map(fieldHtml).join("")}</div><div class="err" id="ferr" hidden></div></div>
+    <footer>${rec ? `<button type="button" class="btn danger left" data-act="delete" data-col="${col}" data-id="${esc(id)}" ${readOnly?"disabled":""}>Delete</button>` : ""}
+      <button type="button" class="btn" data-act="close">Cancel</button><button type="submit" class="btn primary" ${readOnly?"disabled":""}>${rec ? "Save changes" : "Add " + spec.title}</button></footer></form>`;
+  showDlg(d);
+  d.querySelectorAll(".pick").forEach(b => b.addEventListener("click", () => b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true")));
+  $("#form").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const fd = new FormData(ev.target), out = {}, err = $("#ferr");
+    for (const f of spec.fields) {
+      if (f.type === "picks") { out[f.k] = [...d.querySelectorAll(`[data-picks="${f.k}"] .pick[aria-pressed="true"]`)].map(b => b.dataset.val); continue; }
+      let v = (fd.get(f.k) ?? "").toString().trim();
+      if (f.req && !v) { err.textContent = `${f.l} is required.`; err.hidden = false; return; }
+      if (f.type === "number") { if (v === "") { out[f.k] = null; continue; } const n = Number(v); if (!isFinite(n) || n < 0) { err.textContent = `${f.l} must be a positive number.`; err.hidden = false; return; } out[f.k] = Math.round(n*100)/100; continue; }
+      out[f.k] = v;
+    }
+    if (col === "donations" && !out.amount) { err.textContent = "Amount must be more than zero."; err.hidden = false; return; }
+    if (col === "pledges" && out.endDate && out.startDate && out.endDate < out.startDate) { err.textContent = "The end date is before the start date."; err.hidden = false; return; }
+    const body = rec ? {...strip(rec), ...out, updatedAt: Date.now()} : {...out, createdAt: Date.now()};
+    const ok = await write(() => rec ? store.set(col, id, body) : store.add(col, body));
+    if (ok) { closeDlg(d); toast(rec ? "Changes saved" : `${spec.title[0].toUpperCase() + spec.title.slice(1)} added`); }
+  });
+  setTimeout(() => { const first = d.querySelector(".field"); if (first && !rec) first.focus(); }, 30);
+}
+function showDlg(d){ if (typeof d.showModal === "function") { if (!d.open) d.showModal(); } else d.setAttribute("open",""); }
+function closeDlg(d){ if (typeof d.close === "function" && d.open) d.close(); else d.removeAttribute("open"); }
+
+/* ---------- member sheet ---------- */
+let openSheetId = null;
+function openSheet(id){ openSheetId = id; renderSheet(); showDlg($("#sheet")); }
+function renderSheet(){
+  const m = byId("members", openSheetId), sh = $("#sheet");
+  if (!m) { if (sh.open) closeDlg(sh); openSheetId = null; return; }
+  const st = memberStats(m.id);
+  const byFund = FUNDS.map(f => ({f, v: sumAmt(st.ds.filter(d => d.fund === f))})).filter(x => x.v);
+  const pl = S.pledges.filter(p => p.memberId === m.id), fu = S.followups.filter(f => f.memberId === m.id);
+  const hh = m.household ? S.members.filter(x => x.id !== m.id && x.household && x.household.toLowerCase() === m.household.toLowerCase()) : [];
+  const scroll = sh.querySelector(".body")?.scrollTop || 0;
+  sh.innerHTML = `<div class="dlg">
+    <header><div><h2>${esc(m.name)}</h2><div class="chips" style="margin-top:6px">${statusChip(m.status)}${(m.roles||[]).map(r => `<span class="chip">${esc(r)}</span>`).join("")}${m.sample ? '<span class="chip brass">Sample</span>' : ""}</div></div>
+      <button type="button" class="x" data-act="close" aria-label="Close">×</button></header>
+    <div class="body">
+      <div class="stats3"><div class="stat"><div class="l">${year()}</div><div class="v">${m0(st.ytd)}</div></div><div class="stat"><div class="l">All time</div><div class="v">${m0(st.all)}</div></div><div class="stat"><div class="l">Last gift</div><div class="v" style="font-size:15px;padding-top:4px">${st.last ? fmtDate(st.last.date) : "—"}</div></div></div>
+      <dl class="kv">
+        <dt>Phone</dt><dd>${esc(m.phone||"—")}</dd><dt>Email</dt><dd>${esc(m.email||"—")}</dd><dt>Address</dt><dd>${esc(m.address||"—")}</dd>
+        <dt>Household</dt><dd>${esc(m.household||"—")}${hh.length ? `<br><span style="color:var(--muted)">Also: ${hh.map(x => `<a href="#" data-open="${esc(x.id)}" style="color:var(--accent)">${esc(x.name)}</a>`).join(", ")}</span>` : ""}</dd>
+        <dt>Since</dt><dd>${m.since ? fmtDate(m.since) : "—"}</dd>${m.notes ? `<dt>Notes</dt><dd style="white-space:pre-wrap">${esc(m.notes)}</dd>` : ""}
+      </dl>
+      ${byFund.length ? `<div class="sec">Giving by fund</div><div class="funds">${byFund.map(x => `<div class="fund"><span>${esc(x.f)}</span><div class="track"><div class="fill" style="width:${(x.v/Math.max(...byFund.map(y=>y.v))*100).toFixed(1)}%"></div></div><span class="amt">${m0(x.v)}</span></div>`).join("")}</div>` : ""}
+      <div class="sec">Donations <button class="btn ghost sm" data-act="new" data-col="donations" data-member="${esc(m.id)}" ${readOnly?"disabled":""}>+ Record</button></div>
+      ${st.ds.length ? `<div class="rows">${st.ds.slice().sort((a,b) => (b.date||"").localeCompare(a.date||"")).slice(0,12).map(d => `<div class="row" data-edit="donations" data-id="${esc(d.id)}" style="cursor:pointer"><div class="main"><div class="t">${esc(d.fund)}</div><div class="m">${fmtDate(d.date)} · ${esc(d.method||"")}${d.ref ? " · #" + esc(d.ref) : ""}</div></div><div class="r">${m2(d.amount)}</div></div>`).join("")}</div>${st.ds.length > 12 ? `<p class="empty">Showing the 12 most recent of ${st.ds.length}.</p>` : ""}` : `<p class="empty">No donations recorded.</p>`}
+      <div class="sec">Pledges <button class="btn ghost sm" data-act="new" data-col="pledges" data-member="${esc(m.id)}" ${readOnly?"disabled":""}>+ Add</button></div>
+      ${pl.length ? `<div class="rows">${pl.map(p => { const paid = pledgePaid(p), pct = p.amount ? Math.min(100, paid/p.amount*100) : 0; return `<div class="row" data-edit="pledges" data-id="${esc(p.id)}" style="cursor:pointer"><div class="main"><div class="t">${esc(p.campaign)}</div><div class="prog ${pct>=100?"done":""}" style="margin-top:6px"><i style="width:${pct.toFixed(1)}%"></i></div></div><div class="r">${m0(paid)} <span style="color:var(--muted);font-weight:400">of ${m0(p.amount)}</span></div></div>`; }).join("")}</div>` : `<p class="empty">No pledges.</p>`}
+      <div class="sec">Follow-ups <button class="btn ghost sm" data-act="new" data-col="followups" data-member="${esc(m.id)}" ${readOnly?"disabled":""}>+ Add</button></div>
+      ${fu.length ? `<div class="rows">${fu.sort((a,b) => (a.due||"9999").localeCompare(b.due||"9999")).map(fuRow).join("")}</div>` : `<p class="empty">No follow-ups.</p>`}
+    </div>
+    <footer><button class="btn left" data-act="statement" data-id="${esc(m.id)}">Giving statement</button><button class="btn primary" data-act="edit-member" data-id="${esc(m.id)}" ${readOnly?"disabled":""}>Edit member</button></footer></div>`;
+  const b = sh.querySelector(".body"); if (b) b.scrollTop = scroll;
+}
+
+/* ---------- giving statement ---------- */
+function statementText(m, y){
+  const ds = S.donations.filter(d => d.memberId === m.id && (d.date||"").startsWith(String(y))).sort((a,b) => (a.date||"").localeCompare(b.date||""));
+  const lines = [
+    `${MASJID}`, `Statement of Contributions — ${y}`, ``,
+    `Donor:   ${m.name}`, m.household ? `Household: ${m.household}` : null, m.address ? `Address: ${m.address}` : null, ``,
+    `Date          Fund              Method          Amount`,
+    `------------  ----------------  ------------  ----------`,
+    ...ds.map(d => `${fmtDate(d.date).padEnd(12)}  ${(d.fund||"").padEnd(16).slice(0,16)}  ${(d.method||"").padEnd(12).slice(0,12)}  ${m2(d.amount).padStart(10)}`),
+    ds.length ? `` : `No contributions recorded for ${y}.`,
+    `Total contributions in ${y}: ${m2(sumAmt(ds))}`, ``,
+    `No goods or services were provided in exchange for these contributions.`,
+    `JazakAllahu khayran for your support of ${MASJID}.`
+  ];
+  return lines.filter(l => l !== null).join("\n");
+}
+function openStatement(id, y){
+  const m = byId("members", id); if (!m) return; y = y || year();
+  const years = [...new Set([year(), ...S.donations.filter(d => d.memberId === id).map(d => Number((d.date||"").slice(0,4))).filter(Boolean)])].sort((a,b) => b-a);
+  const d = $("#dlg"), txt = statementText(m, y);
+  d.innerHTML = `<div class="dlg"><header><h2>Giving statement</h2><button type="button" class="x" data-act="close" aria-label="Close">×</button></header>
+    <div class="body"><label style="display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)">Year <select class="field" id="stmt-year" style="width:auto">${years.map(x => `<option ${x===y?"selected":""}>${x}</option>`).join("")}</select></label>
+    <pre class="stmt" id="stmt">${esc(txt)}</pre></div>
+    <footer><button class="btn" data-act="dl-stmt" data-id="${esc(id)}" data-year="${y}">Download .txt</button><button class="btn primary" data-act="copy-stmt">Copy text</button></footer></div>`;
+  showDlg(d);
+  $("#stmt-year").addEventListener("change", e => openStatement(id, Number(e.target.value)));
+}
+
+/* ---------- export ---------- */
+function csv(rows){ return rows.map(r => r.map(v => { const s = String(v ?? ""); return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; }).join(",")).join("\n"); }
+async function saveFile(filename, data){
+  if (downloads) { try { await downloads.save({filename, data}); toast("File ready"); } catch(e) { if (e && e.code !== "declined") toast("Couldn't save the file."); } return; }
+  if (conn === "local") { try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data],{type:"text/plain"})); a.download = filename; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); return; } catch(e) {} }
+  toast("Downloads aren't available here. Use Copy instead.");
+}
+function exportMembers(){
+  const rows = [["Name","Household","Status","Phone","Email","Address","Member since","Roles",`Given ${year()}`,"Given all time","Notes"],
+    ...S.members.slice().sort((a,b) => (a.name||"").localeCompare(b.name||"")).map(m => { const s = memberStats(m.id); return [m.name,m.household,m.status,m.phone,m.email,m.address,m.since,(m.roles||[]).join("; "),s.ytd,s.all,m.notes]; })];
+  saveFile(`members-${today()}.csv`, csv(rows));
+}
+function exportDonations(){
+  const ds = S.donations.filter(d => (!ui.dfund || d.fund === ui.dfund) && (!ui.dyear || (d.date||"").startsWith(ui.dyear))).sort((a,b) => (a.date||"").localeCompare(b.date||""));
+  saveFile(`donations${ui.dyear ? "-" + ui.dyear : ""}${ui.dfund ? "-" + ui.dfund.replace(/\W+/g,"-").toLowerCase() : ""}.csv`,
+    csv([["Date","Donor","Member record","Fund","Method","Receipt / ref","Amount","Notes"], ...ds.map(d => [d.date, donorLabel(d), d.memberId ? "Yes" : "No", d.fund, d.method, d.ref, d.amount, d.notes])]));
+}
+
+/* ---------- sample data ---------- */
+async function loadSample(){
+  const ok = await write(async () => {
+    const now = new Date(), rel = (m, day) => isoDate(new Date(now.getFullYear(), now.getMonth() - m, day));
+    const fut = days => isoDate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + days));
+    const people = [
+      ["Yusuf Rahman","Rahman family","Active",["Board"]],["Amina Rahman","Rahman family","Active",["Teacher"]],
+      ["Bilal Okafor","Okafor family","Active",["Volunteer"]],["Fatima Siddiqui","Siddiqui family","Active",["Volunteer","Youth"]],
+      ["Omar Haddad","Haddad family","Active",[]],["Daniel Brooks","","Visitor",["New Muslim"]]];
+    const ids = [];
+    for (const [name,household,status,roles] of people) {
+      const r = await store.add("members", {name, household, status, roles, phone:"(555) 010-" + (1000 + ids.length*37), email:"", address:"", since: rel(30 - ids.length*4, 1), notes:"", sample:true, createdAt: Date.now()});
+      ids.push(r && r.id ? r.id : S.members[S.members.length-1].id);
+    }
+    const gifts = [[0,"General Fund",50],[0,"Building Fund",250],[1,"Zakat",1200],[1,"Sadaqah",40],[2,"General Fund",75],[2,"Building Fund",250],[3,"Ramadan Iftar",300],[3,"Education",100],[4,"Zakat al-Fitr",60],[5,"General Fund",120],[5,"Building Fund",250],[6,"Sadaqah",25],[7,"General Fund",60],[8,"Building Fund",500],[9,"Janazah Fund",100],[10,"General Fund",45]];
+    let i = 0;
+    for (const [mo, fund, amount] of gifts) {
+      await store.add("donations", {memberId: ids[i % 5], donorName:"", amount, date: rel(mo, 3 + (i*5) % 24), fund, method: METHODS[i % METHODS.length], ref: "R-" + (1040 + i), notes:"", sample:true, createdAt: Date.now() + i});
+      i++;
+    }
+    await store.add("donations", {memberId:"", donorName:"Jumu'ah collection box", amount: 412, date: rel(0, 1), fund:"General Fund", method:"Cash", ref:"", notes:"", sample:true, createdAt: Date.now()});
+    await store.add("pledges", {memberId: ids[0], campaign:"Building Fund", amount: 3000, startDate: rel(11,1), endDate: rel(-1,28), notes:"", sample:true, createdAt: Date.now()});
+    await store.add("pledges", {memberId: ids[2], campaign:"Building Fund", amount: 1000, startDate: rel(11,1), endDate: "", notes:"", sample:true, createdAt: Date.now()});
+    await store.add("events", {title:"Tafsir halaqa: Surah Al-Kahf", date: fut(2), time:"After Maghrib", category:"Halaqa", location:"Main prayer hall", expected:40, attended:null, notes:"", sample:true, createdAt: Date.now()});
+    await store.add("events", {title:"Youth game night", date: fut(5), time:"7:00 pm", category:"Youth", location:"Community room", expected:25, attended:null, notes:"", sample:true, createdAt: Date.now()});
+    await store.add("events", {title:"Weekend Qur'an school", date: fut(9), time:"10:00 am", category:"Qur'an class", location:"Classrooms", expected:60, attended:null, notes:"", sample:true, createdAt: Date.now()});
+    await store.add("followups", {subject:"Welcome call and invite to the new Muslim circle", memberId: ids[5], type:"Welcome", due: fut(-1), assignee:"Br. Bilal", status:"Open", notes:"", sample:true, createdAt: Date.now()});
+    await store.add("followups", {subject:"Visit after surgery", memberId: ids[4], type:"Hospital visit", due: fut(1), assignee:"Imam", status:"Open", notes:"", sample:true, createdAt: Date.now()});
+    await store.add("followups", {subject:"Building Fund pledge check-in", memberId: ids[2], type:"Pledge reminder", due: fut(7), assignee:"Treasurer", status:"Open", notes:"", sample:true, createdAt: Date.now()});
+  });
+  if (ok) toast("Sample data loaded");
+}
+async function clearSample(){
+  const ok = await write(async () => { for (const c of COLS) for (const r of S[c].filter(r => r.sample)) await store.remove(c, r.id); });
+  if (ok) toast("Sample data removed");
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-act],[data-open],[data-edit]");
+  if (!t) return;
+  if (t.dataset.open) { e.preventDefault(); openSheet(t.dataset.open); return; }
+  if (t.dataset.edit && !t.dataset.act) { if (t.closest("#sheet") && $("#dlg").open) return; openForm(t.dataset.edit, t.dataset.id); return; }
+  const a = t.dataset.act, dlg = t.closest("dialog");
+  if (a === "close") { closeDlg(dlg); if (dlg && dlg.id === "sheet") openSheetId = null; }
+  else if (a === "new") openForm(t.dataset.col, null, t.dataset.member ? {memberId: t.dataset.member} : null);
+  else if (a === "edit-member") openForm("members", t.dataset.id);
+  else if (a === "delete") {
+    if (!t.classList.contains("armed")) { t.classList.add("armed"); t.textContent = "Click again to delete"; setTimeout(() => { if (t.isConnected) { t.classList.remove("armed"); t.textContent = "Delete"; } }, 4000); return; }
+    const ok = await write(() => store.remove(t.dataset.col, t.dataset.id));
+    if (ok) { closeDlg($("#dlg")); toast("Deleted"); }
+  }
+  else if (a === "toggle-fu") {
+    const f = byId("followups", t.dataset.id); if (!f) return;
+    await write(() => store.set("followups", f.id, {...strip(f), status: f.status === "Done" ? "Open" : "Done", updatedAt: Date.now()}));
+  }
+  else if (a === "statement") openStatement(t.dataset.id);
+  else if (a === "copy-stmt") { const txt = $("#stmt").textContent; try { await navigator.clipboard.writeText(txt); toast("Copied"); } catch(err) { const r = document.createRange(); r.selectNodeContents($("#stmt")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Selected — press Ctrl/Cmd+C to copy"); } }
+  else if (a === "dl-stmt") { const m = byId("members", t.dataset.id); if (m) saveFile(`giving-statement-${t.dataset.year}-${(m.name||"donor").replace(/\W+/g,"-").toLowerCase()}.txt`, statementText(m, Number(t.dataset.year))); }
+  else if (a === "csv-members") exportMembers();
+  else if (a === "csv-donations") exportDonations();
+  else if (a === "sample") loadSample();
+  else if (a === "clear-sample") clearSample();
+});
+document.addEventListener("keydown", e => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches("tr[data-open],tr[data-edit]")) { e.preventDefault(); e.target.click(); }
+});
+document.addEventListener("input", e => {
+  const id = e.target.id;
+  if (["mq","dq"].includes(id)) { ui[id] = e.target.value; VIEW_FN[view].fill(); }
+});
+document.addEventListener("change", e => {
+  const id = e.target.id;
+  if (["mstatus","mrole","dfund","dyear","fstatus","ewhen"].includes(id)) { ui[id] = e.target.value; VIEW_FN[view].fill(); }
+});
+$("#sheet").addEventListener("close", () => { openSheetId = null; });
+window.addEventListener("hashchange", () => { window.scrollTo(0,0); render(); });
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+})();
+</script>
